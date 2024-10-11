@@ -1,0 +1,56 @@
+---
+title: "Boston_Housing_Analysis"
+author: "Sangjun Lim"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Packages
+Load the necessary packages
+```{r message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(forcats)
+```
+
+### The Data
+Load the data   
+```{r, message = F}
+boston <- read_csv("BostonHousing.csv")
+```
+
+
+```{r}
+# Square root transformation to handle skewness
+boston <- boston %>%
+  mutate(CRIM_SQRT = sqrt(CRIM))
+
+
+# Data cleaning
+# Number of missing values from each column
+print(colSums(is.na(boston)))
+
+# If there exists missing values, replace it with the mean of the variable
+boston <- boston %>%
+  mutate(across(everything(), ~ ifelse(is.na(.), mean(., na.rm = TRUE), .)))
+
+# Check if missing values are adjusted
+print(colSums(is.na(boston)))
+
+# Checking if there are duplicated rows
+print(nrow(boston[duplicated(boston), ]))
+
+# Remove duplicated rows
+boston <- boston %>% 
+  distinct()
+
+# Check if duplicated rows are successfully removed
+print(nrow(boston[duplicated(boston), ]))
+```
+
