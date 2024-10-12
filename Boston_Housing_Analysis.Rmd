@@ -17,6 +17,7 @@ library(dplyr)
 library(tidyr)
 library(readr)
 library(forcats)
+library(knitr)
 ```
 
 ### The Data
@@ -52,5 +53,69 @@ boston <- boston %>%
 
 # Check if duplicated rows are successfully removed
 print(nrow(boston[duplicated(boston), ]))
+```
+
+### Descriptive Statistics and Correlation Matrix
+```{r, fig.align='center'}
+# Create correlation matrix
+cor_matrix <- cor(boston)
+
+# Function to mask the upper triangle and replace NA with space
+lower_triangle_with_space <- function(matrix) {
+  matrix[upper.tri(matrix)] <- NA
+  return(matrix)
+}
+
+# Apply the function to the correlation matrix
+cor_matrix_lower <- lower_triangle_with_space(cor_matrix)
+
+# Format the correlation matrix to 3 digits
+cor_matrix_lower <- format(round(cor_matrix_lower, 3), nsmall = 3)
+
+# Calculate mean and standard deviation for each column
+means <- colMeans(boston)
+sds <- apply(boston, 2, sd)
+
+# Combine mean, standard deviation and correlation matrix (table format)
+result_table <- cbind(
+  Mean = format(round(means, 3), nsmall = 3),
+  SD = format(round(sds, 3), nsmall = 3),
+  cor_matrix_lower
+)
+
+# Print the table
+kable(result_table, caption = "Descriptive Statistics and Correlation Matrix")
+```
+
+### Multiple Linear Regression Model
+```{r, fig.align='center'}
+# Reshape the data to a long format
+boston_long <- boston %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
+
+# Histogram for each numerical variable in the dataset
+ggplot(boston_long, aes(x = value)) +
+  geom_histogram(bins = 10, fill = "skyblue", color = "black") +
+  facet_wrap(~ variable, scales = "free", ncol = 4) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  labs(title = "Histograms of Numerical Variables in Boston Housing Dataset",
+       x = "Value",
+       y = "Frequency")
+
+
+boston_long <- boston %>%
+  pivot_longer(cols = -MEDV, names_to = "variable", values_to = "value")
+
+ggplot(boston_long, aes(x = value, y = MEDV)) +
+  geom_point(alpha = 0.8, size = 0.75) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  facet_wrap(~ variable, scales = "free", ncol = 4) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  labs(title = "Scatterplots of MEDV and each Independent Variable",
+       x = "Value",
+       y = "MEDV")
+
 ```
 
