@@ -18,6 +18,7 @@ library(tidyr)
 library(readr)
 library(forcats)
 library(knitr)
+library(car)
 ```
 
 ### The Data
@@ -117,5 +118,40 @@ ggplot(boston_long, aes(x = value, y = MEDV)) +
        x = "Value",
        y = "MEDV")
 
+
+# Create multiple linear regression model
+mlr_model <- lm(MEDV ~ ., data = boston)
+
+
 ```
+
+### Model Diagnostics
+```{r}
+par(mfrow = c(2, 2))
+plot(mlr_model)
+```
+
+The plots test the following assumptions:
+
+  1. **Residuals vs. Fitted**: Deviations from a horizontal line indicate non-linearity, suggesting the need for a different modeling approach.
+
+  2. **Normal Q-Q Plot**: Deviations from the diagonal line indicate non-normality of the residuals, which may affect inference.
+
+  3. **Scale-Location Plot**: A non-horizontal line or clustered points suggest heteroscedasticity, indicating that the variance of residuals is not constant.
+
+```{r}
+vif <- vif(mlr_model)
+print(vif)
+```
+The VIF (Variance Inflation Factor) values indicate significant multicollinearity among the predictors. High VIF values suggest that some variables are highly correlated, which can compromise the stability of the regression coefficients. Notably, the VIF values for ***CRIM* (15.12)**, ***CRIM_SQRT* (37.68)**, ***RAD* (12.66)**, and ***TAX* (9.00)** are particularly concerning.
+
+```{r}
+summary(mlr_model)
+```
+
+The model demonstrates a good fit, explaining approximately 73.37% of the variance in the variable *MEDV* with an adjusted R-squared of 0.7267. This indicates that the predictors included in the model are effective in explaining the variability in home prices in Boston.
+
+The coefficients in the model exhibit varying levels of statistical significance. Key predictors like the *RM*, *NOX*, and *LSTAT* are highly significant, with p-values less than 0.001, indicating strong evidence that these variables meaningfully influence variable *MEDV*.
+
+However, the model faces violations of assumptions related to non-linearity, non-normality of residuals, and multicollinearity, which should be addressed to enhance the reliability of the results. These issues may warrant consideration of alternative modeling methodologies to better capture the underlying relationships and improve overall model performance.
 
