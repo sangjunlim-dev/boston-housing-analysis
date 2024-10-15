@@ -2,7 +2,11 @@
 title: "Boston_Housing_Analysis"
 author: "Sangjun Lim"
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: united
 ---
 
 ```{r setup, include=FALSE}
@@ -10,44 +14,51 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ### Packages
-Load the necessary packages
-```{r message=FALSE}
-library(ggplot2)
+Load the required packages for the analysis.
+```{r, message=F}
+library(knitr)
+library(readr)
 library(dplyr)
 library(tidyr)
-library(readr)
-library(forcats)
-library(knitr)
+library(ggplot2)
 library(car)
 ```
 
-### The Data
-Load the data   
+## Data
+Load the dataset into the R environment for analysis.
 ```{r, message = F}
 boston <- read_csv("BostonHousing.csv")
 ```
-
-
+### Data Cleaning
+The square root transformation was applied to *CRIM* to address skewness, resulting in the creation of the variable *CRIM_SQRT.*
 ```{r}
-# Square root transformation to handle skewness
 boston <- boston %>%
   mutate(CRIM_SQRT = sqrt(CRIM))
+```
 
-
-# Data cleaning
-# Number of missing values from each column
+Check each column to determine if any missing values are present.
+```{r}
 print(colSums(is.na(boston)))
+```
 
-# If there exists missing values, replace it with the mean of the variable
+If there are missing values, replace them with the mean of the respective variable.
+```{r}
 boston <- boston %>%
   mutate(across(everything(), ~ ifelse(is.na(.), mean(., na.rm = TRUE), .)))
+```
 
-# Check if missing values are adjusted
+After addressing the missing values, the dataset is now free of any missing entries.
+```{r}
 print(colSums(is.na(boston)))
+```
 
-# Checking if there are duplicated rows
+The dataset contains three duplicate rows.
+```{r}
 print(nrow(boston[duplicated(boston), ]))
+```
 
+Remove duplicated rows and check if they are successfully removed.
+```{r}
 # Remove duplicated rows
 boston <- boston %>% 
   distinct()
@@ -56,7 +67,8 @@ boston <- boston %>%
 print(nrow(boston[duplicated(boston), ]))
 ```
 
-### Descriptive Statistics and Correlation Matrix
+### Descriptive Stats & Correlation Matrix
+Develop a descriptive statistics table for all numerical variables, including the mean and standard deviation, followed by a correlation matrix. 
 ```{r, fig.align='center'}
 # Create correlation matrix
 cor_matrix <- cor(boston)
@@ -85,10 +97,11 @@ result_table <- cbind(
 )
 
 # Print the table
-kable(result_table, caption = "Descriptive Statistics and Correlation Matrix")
+kable(result_table)
 ```
 
-### Multiple Linear Regression Model
+## Multiple Linear Regression Model
+Create histograms for each numerical variable, displaying their distributions in the Boston housing dataset.
 ```{r, fig.align='center'}
 # Reshape the data to a long format
 boston_long <- boston %>%
@@ -103,11 +116,14 @@ ggplot(boston_long, aes(x = value)) +
   labs(title = "Histograms of Numerical Variables in Boston Housing Dataset",
        x = "Value",
        y = "Frequency")
+```
 
-
+Check the linear relationship between MEDV and each independent variable.
+```{r, fig.align='center', message=F}
 boston_long <- boston %>%
   pivot_longer(cols = -MEDV, names_to = "variable", values_to = "value")
 
+# Scatterplot of MEDV vs. Independent variables
 ggplot(boston_long, aes(x = value, y = MEDV)) +
   geom_point(alpha = 0.8, size = 0.75) +
   geom_smooth(method = "lm", se = FALSE, color = "red") +
@@ -117,15 +133,15 @@ ggplot(boston_long, aes(x = value, y = MEDV)) +
   labs(title = "Scatterplots of MEDV and each Independent Variable",
        x = "Value",
        y = "MEDV")
+```
 
-
-# Create multiple linear regression model
+Create multiple linear regression model using MEDV as the dependent variable and the rest of variables as independent variables.
+```{r}
 mlr_model <- lm(MEDV ~ ., data = boston)
-
-
 ```
 
 ### Model Diagnostics
+Check 4 assumptions of linear regression.
 ```{r}
 par(mfrow = c(2, 2))
 plot(mlr_model)
@@ -133,18 +149,20 @@ plot(mlr_model)
 
 The plots test the following assumptions:
 
-  1. **Residuals vs. Fitted**: Deviations from a horizontal line indicate non-linearity, suggesting the need for a different modeling approach.
+1.  **Residuals vs. Fitted**: Deviations from a horizontal line indicate non-linearity, suggesting the need for a different modeling approach.
 
-  2. **Normal Q-Q Plot**: Deviations from the diagonal line indicate non-normality of the residuals, which may affect inference.
+2.  **Normal Q-Q Plot**: Deviations from the diagonal line indicate non-normality of the residuals, which may affect inference.
 
-  3. **Scale-Location Plot**: A non-horizontal line or clustered points suggest heteroscedasticity, indicating that the variance of residuals is not constant.
+3.  **Scale-Location Plot**: A non-horizontal line or clustered points suggest heteroscedasticity, indicating that the variance of residuals is not constant.
 
+Check VIF (Variance Inflation Factor) values for the predictors to assess multicollinearity.
 ```{r}
-vif <- vif(mlr_model)
-print(vif)
+vif(mlr_model)
 ```
-The VIF (Variance Inflation Factor) values indicate significant multicollinearity among the predictors. High VIF values suggest that some variables are highly correlated, which can compromise the stability of the regression coefficients. Notably, the VIF values for ***CRIM* (15.12)**, ***CRIM_SQRT* (37.68)**, ***RAD* (12.66)**, and ***TAX* (9.00)** are particularly concerning.
 
+The VIF values indicate significant multicollinearity among the predictors. High VIF values suggest that some variables are highly correlated, which can compromise the stability of the regression coefficients. Notably, the VIF values for ***CRIM*** **(15.12)**, ***CRIM_SQRT*** **(37.68)**, ***RAD*** **(12.66)**, and ***TAX*** **(9.00)** are particularly concerning.
+
+### Summary
 ```{r}
 summary(mlr_model)
 ```
@@ -155,3 +173,71 @@ The coefficients in the model exhibit varying levels of statistical significance
 
 However, the model faces violations of assumptions related to non-linearity, non-normality of residuals, and multicollinearity, which should be addressed to enhance the reliability of the results. These issues may warrant consideration of alternative modeling methodologies to better capture the underlying relationships and improve overall model performance.
 
+## Logistic Regression Model
+A binary outcome variable named *MEDV_BINARY* was created to predict whether a home has a median value above the median (1) or not (0). Logistic regression was then employed to predict this outcome based on various features of the homes, including the square root of the per capita crime rate (*CRIM_SQRT*), the average number of rooms per dwelling (*RM*), the percentage of lower status residents (*LSTAT*), and the full-value property tax rate per $10,000 (*TAX*).
+```{r}
+boston <- boston %>%
+  mutate(MEDV_BINARY = ifelse(MEDV > median(MEDV), 1, 0))
+
+# Logistic regression model
+logistic_model <- glm(MEDV_BINARY ~ CRIM_SQRT + RM + LSTAT + TAX, data = boston, family = binomial)
+```
+
+Check VIF values for the predictors to assess multicollinearity.
+```{r}
+vif(logistic_model)
+```
+
+None of the variables have serious multicollinearity issues, as all VIF values are below 5.
+
+```{r}
+summary(logistic_model)
+```
+
+### Coffeicient Interpretations
+
+#### Intercept (B0)
+
+The intercept represents the log-odds of the outcome (i.e., MEDV_BINARY = 1) when all predictors are zero. However, in this context, it lacks practical significance, as a value of zero for these predictors is not realistic.
+
+#### CRIM_SQRT (B1 = 0.071597)
+
+For each additional unit increase in CRIM_SQRT, the log-odds of being classified as a median value above the median increase increase by 0.071597.
+
+The odds ratio for CRIM_SQRT can be calculated as <small>$e^{(0.071597)} = 1.07422235$</small>, meaning that for each unit increase in CRIM_SQRT, the odds of a home having a median value above the median increase by approximately 7.4%.
+
+#### RM (B2 = 1.325798)
+
+For each additional unit increase in RM, the log-odds of a home being classified as having a median value above the median increase by 1.325798. 
+
+The odds ratio for RM can be calculated as <small>$e^{(1.325798)} \approx 3.76518878$</small>, meaning that for each unit increase in RM, the odds of a home having a median value above the median increase by approximately 276.5%.
+
+#### LSTAT (B3 = -0.314980)
+
+For each additional unit increase in LSTAT, the log-odds of a home being classified as having a median value above the median decrease by 0.314980.
+
+The odds ratio for LSTAT can be calculated as <small>$e^{(-0.314980)} = 0.72980347$</small>, meaning that for each unit increase in LSTAT, the odds of a home having a median value above the median decrease by approximately 27%. 
+
+#### TAX (B4 = -0.002249)
+
+For each additional unit increase in TAX, the log-odds of a home being classified as having a median value above the median decrease by 0.002249. 
+
+The odds ratio for TAX can be calculated as <small>$e^{(-0.002249)} = 0.997753527$</small>, meaning that for each unit increase in TAX, the odds of a home having a median value above the median decrease by approximately 0.2%. 
+
+### Significance of the Predictors
+**CRIM_SQRT**: The p-value for CRIM_SQRT is 0.683, indicating that it is not statistically significant at the 5% level, suggesting that the square root of the crime rate is not a meaningful predictor of whether a home has a median value above the median.
+
+**RM**: The p-value for RM is <small>$5.86 × 10^{-5}$</small>, which is highly statistically significant, indicating that the average number of rooms is a strong predictor of whether a home has a median value above the median.
+
+**LSTAT**: The p-value for LSTAT is <small>$2.04 × 10^{-15}$</small>, which is also highly statistically significant, indicating that the percentage of lower status residents is a very strong predictor of whether a home has a median value above the median.
+
+**TAX**: The p-value for TAX is 0.102, which is not statistically significant at the 5% level, suggesting that the property tax rate (Full-value property tax rate per $10,000) is not a meaningful predictor of whether a home has a median value above the median.
+
+### Summary
+**CRIM_SQRT** is a weak predictor of whether a home has a median value above the median. Each additional unit increase in CRIM_SQRT results in a 7.4% increase in the odds of being classified as having a median value above the median; however, this effect is not statistically significant at the 5% level.
+
+**RM** is a very strong predictor of home value. For each additional unit increase in RM, the odds of a home being classified as having a median value above the median increase by approximately 276.5%, indicating a highly significant relationship.
+
+**LSTAT** is also a strong predictor. Each additional unit increase in LSTAT leads to a decrease of about 27% in the odds of a home being classified as having a median value above the median, demonstrating a significant negative relationship.
+
+**TAX** is a weak predictor of home value. For each additional unit increase in TAX, the odds of a home being classified as having a median value above the median decrease by approximately 0.2%. Furthermore, this effect is not statistically significant at the 5% level.
