@@ -167,9 +167,9 @@ The VIF values indicate significant multicollinearity among the predictors. High
 summary(mlr_model)
 ```
 
-The model demonstrates a good fit, explaining approximately 73.37% of the variance in the variable *MEDV* with an adjusted R-squared of 0.7267. This indicates that the predictors included in the model are effective in explaining the variability in home prices in Boston.
+The model demonstrates a good fit, explaining approximately 73.37% of the variance in the variable MEDV, with an adjusted R-squared of 0.7267. This indicates that the predictors included in the model are effective in explaining the variability in home prices in Boston. Additionally, the F-statistic is 104.3 with a p-value of < 2.2e-16, which confirms the overall significance of the model, indicating that at least one predictor meaningfully influences MEDV.
 
-The coefficients in the model exhibit varying levels of statistical significance. Key predictors like the *RM*, *NOX*, and *LSTAT* are highly significant, with p-values less than 0.001, indicating strong evidence that these variables meaningfully influence variable *MEDV*.
+The coefficients in the model exhibit varying levels of statistical significance. Key predictors like RM, NOX, and LSTAT are highly significant, with p-values less than 0.001, indicating strong evidence that these variables meaningfully influence MEDV.
 
 However, the model faces violations of assumptions related to non-linearity, non-normality of residuals, and multicollinearity, which should be addressed to enhance the reliability of the results. These issues may warrant consideration of alternative modeling methodologies to better capture the underlying relationships and improve overall model performance.
 

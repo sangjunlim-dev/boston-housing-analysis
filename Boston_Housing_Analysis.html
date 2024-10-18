@@ -11,7 +11,7 @@
 
 <meta name="author" content="Sangjun Lim" />
 
-<meta name="date" content="2024-10-15" />
+<meta name="date" content="2024-10-17" />
 
 <title>Boston_Housing_Analysis</title>
 
@@ -1487,7 +1487,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Boston_Housing_Analysis</h1>
 <h4 class="author">Sangjun Lim</h4>
-<h4 class="date">2024-10-15</h4>
+<h4 class="date">2024-10-17</h4>
 
 </div>
 
@@ -1993,14 +1993,16 @@ coefficients. Notably, the VIF values for <strong><em>CRIM</em></strong>
 ## Multiple R-squared:  0.7337, Adjusted R-squared:  0.7267 
 ## F-statistic: 104.3 on 13 and 492 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>The model demonstrates a good fit, explaining approximately 73.37% of
-the variance in the variable <em>MEDV</em> with an adjusted R-squared of
-0.7267. This indicates that the predictors included in the model are
-effective in explaining the variability in home prices in Boston.</p>
+the variance in the variable MEDV, with an adjusted R-squared of 0.7267.
+This indicates that the predictors included in the model are effective
+in explaining the variability in home prices in Boston. Additionally,
+the F-statistic is 104.3 with a p-value of &lt; 2.2e-16, which confirms
+the overall significance of the model, indicating that at least one
+predictor meaningfully influences MEDV.</p>
 <p>The coefficients in the model exhibit varying levels of statistical
-significance. Key predictors like the <em>RM</em>, <em>NOX</em>, and
-<em>LSTAT</em> are highly significant, with p-values less than 0.001,
-indicating strong evidence that these variables meaningfully influence
-variable <em>MEDV</em>.</p>
+significance. Key predictors like RM, NOX, and LSTAT are highly
+significant, with p-values less than 0.001, indicating strong evidence
+that these variables meaningfully influence MEDV.</p>
 <p>However, the model faces violations of assumptions related to
 non-linearity, non-normality of residuals, and multicollinearity, which
 should be addressed to enhance the reliability of the results. These
